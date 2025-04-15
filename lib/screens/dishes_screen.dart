@@ -40,14 +40,18 @@ class _DishesScreenState extends State<DishesScreen> {
     });
   }
 
-  void onCartButtonPressed() {
-    Navigator.push(
+  void onCartButtonPressed() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (ctx) => CartScreen(restaurantId: widget.restaurantId, cart: cart),
       ),
     );
+
+    setState(() {
+      // cart was updated
+    });
   }
 
   @override

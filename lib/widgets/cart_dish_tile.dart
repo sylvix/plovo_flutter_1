@@ -50,7 +50,7 @@ class CartDishTile extends StatelessWidget {
           IconButton(
             onPressed: onRemoved,
             iconSize: 18,
-            icon: Icon(Icons.remove),
+            icon: Icon(cartDish.amount == 1 ? Icons.delete : Icons.remove),
           ),
           SizedBox(
             width: 20,

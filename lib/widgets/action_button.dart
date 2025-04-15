@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
-  final Widget child;
   final void Function() onPressed;
+  final Widget child;
 
-  const ActionButton({super.key, required this.child, required this.onPressed});
+  const ActionButton({super.key, required this.onPressed, required this.child});
 
   @override
   Widget build(BuildContext context) {
