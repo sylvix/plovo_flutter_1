@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:plovo/app_routes.dart';
 import 'package:plovo/data/restaurants_data.dart';
-import 'package:plovo/screens/dishes_screen.dart';
 import 'package:plovo/widgets/restaurant_card.dart';
 
 class RestaurantsScreen extends StatelessWidget {
   const RestaurantsScreen({super.key});
 
   void onRestaurantSelected(BuildContext context, String restaurantId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (ctx) => DishesScreen(restaurantId: restaurantId),
-      ),
-    );
+    Navigator.of(context).pushNamed(AppRoutes.dishes, arguments: restaurantId);
   }
 
   @override

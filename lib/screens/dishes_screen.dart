@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:plovo/app_routes.dart';
 import 'package:plovo/data/dishes_data.dart';
 import 'package:plovo/data/restaurants_data.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/dish.dart';
 import 'package:plovo/models/restaurant.dart';
-import 'package:plovo/screens/cart_screen.dart';
+import 'package:plovo/models/route_arguments/cart_screen_arguments.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/dish_card.dart';
 
 class DishesScreen extends StatefulWidget {
-  final String restaurantId;
-
-  const DishesScreen({super.key, required this.restaurantId});
+  const DishesScreen({super.key});
 
   @override
   State<DishesScreen> createState() => _DishesScreenState();
@@ -23,14 +22,16 @@ class _DishesScreenState extends State<DishesScreen> {
   final cart = Cart();
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
+
     restaurant = restaurantsData.firstWhere(
-      (restaurant) => restaurant.id == widget.restaurantId,
+      (restaurant) => restaurant.id == restaurantId,
     );
     dishes =
         restaurantDishes
-            .where((dish) => dish.restaurantId == widget.restaurantId)
+            .where((dish) => dish.restaurantId == restaurantId)
             .toList();
   }
 
@@ -41,12 +42,9 @@ class _DishesScreenState extends State<DishesScreen> {
   }
 
   void onCartButtonPressed() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (ctx) => CartScreen(restaurantId: widget.restaurantId, cart: cart),
-      ),
+    await Navigator.of(context).pushNamed(
+      AppRoutes.cart,
+      arguments: CartScreenArguments(restaurantId: restaurant.id, cart: cart),
     );
 
     setState(() {

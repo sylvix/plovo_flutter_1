@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:plovo/app_routes.dart';
 import 'package:plovo/data/restaurants_data.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/dish.dart';
 import 'package:plovo/models/restaurant.dart';
-import 'package:plovo/screens/checkout_screen.dart';
+import 'package:plovo/models/route_arguments/cart_screen_arguments.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/cart_dish_tile.dart';
 import 'package:plovo/widgets/cart_empty.dart';
 
 class CartScreen extends StatefulWidget {
-  final String restaurantId;
-  final Cart cart;
-  const CartScreen({super.key, required this.restaurantId, required this.cart});
+  const CartScreen({super.key});
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -19,18 +18,23 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   late Restaurant restaurant;
+  late Cart cart;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arguments =
+        ModalRoute.of(context)!.settings.arguments as CartScreenArguments;
+
     restaurant = restaurantsData.firstWhere(
-      (restaurant) => restaurant.id == widget.restaurantId,
+      (restaurant) => restaurant.id == arguments.restaurantId,
     );
+    cart = arguments.cart;
   }
 
   void addDish(Dish dish) {
     setState(() {
-      widget.cart.addDish(dish);
+      cart.addDish(dish);
     });
   }
 
@@ -71,28 +75,28 @@ class _CartScreenState extends State<CartScreen> {
 
   void removeDish(Dish dish) {
     setState(() {
-      widget.cart.removeDish(dish);
+      cart.removeDish(dish);
     });
   }
 
   void goToCheckout() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (ctx) => CheckoutScreen()),
+    Navigator.of(context).pushNamed(
+      AppRoutes.checkout,
+      arguments: CartScreenArguments(restaurantId: restaurant.id, cart: cart),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final total = widget.cart.total;
+    final total = cart.total;
 
     return Scaffold(
       appBar: AppBar(title: Text('Your cart - ${restaurant.name}')),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16),
         child:
-            widget.cart.cartDishes.isEmpty
+            cart.cartDishes.isEmpty
                 ? CartEmpty()
                 : Stack(
                   children: [
@@ -101,10 +105,10 @@ class _CartScreenState extends State<CartScreen> {
                         top: 8,
                         bottom: bottomPadding + 60,
                       ),
-                      itemCount: widget.cart.cartDishes.length,
+                      itemCount: cart.cartDishes.length,
                       separatorBuilder: (ctx, i) => Divider(),
                       itemBuilder: (ctx, i) {
-                        final cartDish = widget.cart.cartDishes[i];
+                        final cartDish = cart.cartDishes[i];
                         return CartDishTile(
                           cartDish: cartDish,
                           onAdded: () => addDish(cartDish.dish),

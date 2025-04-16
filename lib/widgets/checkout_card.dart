@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CheckoutCard extends StatelessWidget {
+  final Widget? action;
   final bool initiallyExpanded;
   final String title;
   final String subtitle;
@@ -8,6 +9,7 @@ class CheckoutCard extends StatelessWidget {
 
   const CheckoutCard({
     super.key,
+    this.action,
     this.initiallyExpanded = false,
     required this.title,
     required this.subtitle,
@@ -30,12 +32,24 @@ class CheckoutCard extends StatelessWidget {
           collapsedShape: shape,
           childrenPadding: EdgeInsets.symmetric(vertical: 16),
           initiallyExpanded: initiallyExpanded,
-          title: Text(title, style: theme.textTheme.titleLarge),
-          subtitle: Text(
-            subtitle,
-            style: theme.textTheme.titleSmall,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          title: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: theme.textTheme.titleLarge),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.titleSmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (action != null) action!,
+            ],
           ),
           children: children,
         ),

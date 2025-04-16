@@ -41,4 +41,8 @@ class Cart {
   double get total {
     return cartDishes.fold(0, (total, cartDish) => total + cartDish.total);
   }
+
+  int get totalItems {
+    return cartDishes.fold(0, (total, cartDish) => total + cartDish.amount);
+  }
 }
