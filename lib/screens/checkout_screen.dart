@@ -3,7 +3,7 @@ import 'package:plovo/app_routes.dart';
 import 'package:plovo/data/restaurants_data.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/restaurant.dart';
-import 'package:plovo/models/route_arguments/cart_screen_arguments.dart';
+import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/checkout_card.dart';
 import 'package:plovo/widgets/checkout_cart_dish_item.dart';
@@ -18,17 +18,15 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   late Restaurant restaurant;
   late Cart cart;
+  late CartProvider cartProvider;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final arguments =
-        ModalRoute.of(context)!.settings.arguments as CartScreenArguments;
-
-    restaurant = restaurantsData.firstWhere(
-      (res) => res.id == arguments.restaurantId,
-    );
-    cart = arguments.cart;
+    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
+    restaurant = restaurantsData.firstWhere((res) => res.id == restaurantId);
+    cartProvider = CartProvider.of(context)!;
+    cart = cartProvider.cart;
   }
 
   void goBackToRestaurant() async {

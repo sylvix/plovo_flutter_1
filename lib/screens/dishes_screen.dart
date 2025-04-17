@@ -5,7 +5,7 @@ import 'package:plovo/data/restaurants_data.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/dish.dart';
 import 'package:plovo/models/restaurant.dart';
-import 'package:plovo/models/route_arguments/cart_screen_arguments.dart';
+import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/dish_card.dart';
 
@@ -19,7 +19,8 @@ class DishesScreen extends StatefulWidget {
 class _DishesScreenState extends State<DishesScreen> {
   late Restaurant restaurant;
   List<Dish> dishes = [];
-  final cart = Cart();
+  late Cart cart;
+  late CartProvider cartProvider;
 
   @override
   void didChangeDependencies() {
@@ -33,23 +34,18 @@ class _DishesScreenState extends State<DishesScreen> {
         restaurantDishes
             .where((dish) => dish.restaurantId == restaurantId)
             .toList();
+    cartProvider = CartProvider.of(context)!;
+    cart = cartProvider.cart;
   }
 
   void onDishAdded(Dish dish) {
-    setState(() {
-      cart.addDish(dish);
-    });
+    cartProvider.addDish(dish);
   }
 
   void onCartButtonPressed() async {
-    await Navigator.of(context).pushNamed(
-      AppRoutes.cart,
-      arguments: CartScreenArguments(restaurantId: restaurant.id, cart: cart),
-    );
-
-    setState(() {
-      // cart was updated
-    });
+    await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.cart, arguments: restaurant.id);
   }
 
   @override

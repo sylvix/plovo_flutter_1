@@ -4,7 +4,7 @@ import 'package:plovo/data/restaurants_data.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/dish.dart';
 import 'package:plovo/models/restaurant.dart';
-import 'package:plovo/models/route_arguments/cart_screen_arguments.dart';
+import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/cart_dish_tile.dart';
 import 'package:plovo/widgets/cart_empty.dart';
@@ -19,23 +19,26 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   late Restaurant restaurant;
   late Cart cart;
+  late CartProvider cartProvider;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final arguments =
-        ModalRoute.of(context)!.settings.arguments as CartScreenArguments;
+    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
 
     restaurant = restaurantsData.firstWhere(
-      (restaurant) => restaurant.id == arguments.restaurantId,
+      (restaurant) => restaurant.id == restaurantId,
     );
-    cart = arguments.cart;
+    cartProvider = CartProvider.of(context)!;
+    cart = cartProvider.cart;
   }
 
   void addDish(Dish dish) {
-    setState(() {
-      cart.addDish(dish);
-    });
+    cartProvider.addDish(dish);
+  }
+
+  void removeDish(Dish dish) {
+    cartProvider.removeDish(dish);
   }
 
   void checkAndConfirmRemoval(CartDish cartDish) async {
@@ -73,17 +76,9 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void removeDish(Dish dish) {
-    setState(() {
-      cart.removeDish(dish);
-    });
-  }
-
   void goToCheckout() {
-    Navigator.of(context).pushNamed(
-      AppRoutes.checkout,
-      arguments: CartScreenArguments(restaurantId: restaurant.id, cart: cart),
-    );
+    final navigator = Navigator.of(context);
+    navigator.pushNamed(AppRoutes.checkout, arguments: restaurant.id);
   }
 
   @override
