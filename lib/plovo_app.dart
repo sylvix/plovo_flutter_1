@@ -4,6 +4,7 @@ import 'package:plovo/providers/cart_state.dart';
 import 'package:plovo/screens/cart_screen.dart';
 import 'package:plovo/screens/checkout_screen.dart';
 import 'package:plovo/screens/dishes_screen.dart';
+import 'package:plovo/screens/not_found_screen.dart';
 import 'package:plovo/screens/restaurants_screen.dart';
 import 'package:plovo/theme/light_theme.dart';
 
@@ -22,6 +23,8 @@ class PlovoApp extends StatelessWidget {
           AppRoutes.cart: (ctx) => CartScreen(),
           AppRoutes.checkout: (ctx) => CheckoutScreen(),
         },
+        onUnknownRoute:
+            (s) => MaterialPageRoute(builder: (ctx) => NotFoundScreen()),
       ),
     );
   }

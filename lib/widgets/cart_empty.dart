@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:plovo/widgets/action_button.dart';
+import 'package:plovo/widgets/center_placeholder.dart';
 
 class CartEmpty extends StatelessWidget {
   const CartEmpty({super.key});
@@ -10,29 +10,11 @@ class CartEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Stack(
-      children: [
-        Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.shopping_cart_outlined,
-                size: 100,
-                color: theme.colorScheme.primary,
-              ),
-              SizedBox(height: 16),
-              Text('Your cart is empty', style: theme.textTheme.titleMedium),
-            ],
-          ),
-        ),
-        ActionButton(
-          onPressed: () => goBackToMenu(context),
-          child: Text('Go back to menu'),
-        ),
-      ],
+    return CenterPlaceholder(
+      title: 'Your cart is empty',
+      iconData: Icons.shopping_cart_outlined,
+      buttonText: 'Go back to menu',
+      onButtonPressed: () => goBackToMenu(context),
     );
   }
 }
