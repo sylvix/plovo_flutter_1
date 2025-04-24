@@ -1,41 +1,69 @@
 import 'package:plovo/models/dish.dart';
 
 class CartDish {
-  Dish dish;
-  int amount;
+  final Dish dish;
+  final int amount;
 
-  CartDish({required this.dish, required this.amount});
+  const CartDish({required this.dish, required this.amount});
 
   double get total {
     return dish.price * amount;
   }
+
+  CartDish copyWith({Dish? dish, int? amount}) {
+    return CartDish(dish: dish ?? this.dish, amount: amount ?? this.amount);
+  }
 }
 
 class Cart {
-  List<CartDish> cartDishes = [];
+  final List<CartDish> cartDishes;
 
-  void addDish(Dish dish) {
-    try {
-      final cartDish = cartDishes.firstWhere(
-        (cartDish) => cartDish.dish.id == dish.id,
-      );
+  const Cart({required this.cartDishes});
 
-      cartDish.amount++;
-    } catch (error) {
-      cartDishes.add(CartDish(dish: dish, amount: 1));
-    }
-  }
-
-  void removeDish(Dish dish) {
-    final cartDish = cartDishes.firstWhere(
+  Cart addDish(Dish dish) {
+    final existingDishIndex = cartDishes.indexWhere(
       (cartDish) => cartDish.dish.id == dish.id,
     );
 
-    if (cartDish.amount > 1) {
-      cartDish.amount--;
-    } else {
-      cartDishes.remove(cartDish);
+    if (existingDishIndex != -1) {
+      final updatedDishes = List<CartDish>.from(cartDishes);
+      final existingCartDish = updatedDishes[existingDishIndex];
+      final existingCartDishCopy = existingCartDish.copyWith(
+        amount: existingCartDish.amount + 1,
+      );
+      updatedDishes[existingDishIndex] = existingCartDishCopy;
+
+      return Cart(cartDishes: updatedDishes);
     }
+
+    return Cart(cartDishes: [...cartDishes, CartDish(dish: dish, amount: 1)]);
+  }
+
+  Cart removeDish(Dish dish) {
+    final existingDishIndex = cartDishes.indexWhere(
+      (cartDish) => cartDish.dish.id == dish.id,
+    );
+
+    if (existingDishIndex == -1) {
+      return this;
+    }
+
+    final existingCartDish = cartDishes[existingDishIndex];
+
+    if (existingCartDish.amount > 1) {
+      final updatedCartDishes = List<CartDish>.from(cartDishes);
+      final existingCartDishCopy = existingCartDish.copyWith(
+        amount: existingCartDish.amount - 1,
+      );
+      updatedCartDishes[existingDishIndex] = existingCartDishCopy;
+
+      return Cart(cartDishes: updatedCartDishes);
+    }
+
+    final updatedCartDishes = List<CartDish>.from(cartDishes)
+      ..removeAt(existingDishIndex);
+
+    return Cart(cartDishes: updatedCartDishes);
   }
 
   double get total {

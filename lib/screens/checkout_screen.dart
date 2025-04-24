@@ -26,7 +26,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
     restaurant = restaurantsData.firstWhere((res) => res.id == restaurantId);
     cartProvider = CartProvider.of(context)!;
-    cart = cartProvider.cart;
+    cart = cartProvider.getCart(restaurantId);
   }
 
   void goBackToRestaurant() async {

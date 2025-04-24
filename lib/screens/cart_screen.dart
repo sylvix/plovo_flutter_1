@@ -30,7 +30,7 @@ class _CartScreenState extends State<CartScreen> {
       (restaurant) => restaurant.id == restaurantId,
     );
     cartProvider = CartProvider.of(context)!;
-    cart = cartProvider.cart;
+    cart = cartProvider.getCart(restaurantId);
   }
 
   void addDish(Dish dish) {

@@ -12,24 +12,35 @@ class CartState extends StatefulWidget {
 }
 
 class _CartStateState extends State<CartState> {
-  final cart = Cart();
+  Map<String, Cart> carts = {};
+
+  Cart getOrCreateCart(String restaurantId) {
+    return carts[restaurantId] ?? Cart(cartDishes: []);
+  }
 
   void addDish(Dish dish) {
     setState(() {
-      cart.addDish(dish);
+      carts = {
+        ...carts,
+        dish.restaurantId: getOrCreateCart(dish.restaurantId).addDish(dish),
+      };
     });
   }
 
   void removeDish(Dish dish) {
     setState(() {
-      cart.removeDish(dish);
+      carts = {
+        ...carts,
+        dish.restaurantId: getOrCreateCart(dish.restaurantId).removeDish(dish),
+      };
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return CartProvider(
-      cart: cart,
+      carts: carts,
+      getCart: getOrCreateCart,
       addDish: addDish,
       removeDish: removeDish,
       child: widget.child,

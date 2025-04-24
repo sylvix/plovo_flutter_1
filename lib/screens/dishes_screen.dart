@@ -35,7 +35,7 @@ class _DishesScreenState extends State<DishesScreen> {
             .where((dish) => dish.restaurantId == restaurantId)
             .toList();
     cartProvider = CartProvider.of(context)!;
-    cart = cartProvider.cart;
+    cart = cartProvider.getCart(restaurantId);
   }
 
   void onDishAdded(Dish dish) {
