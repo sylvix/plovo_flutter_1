@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/restaurant_cart_badge.dart';
+import 'package:provider/provider.dart';
 
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
@@ -15,7 +16,7 @@ class RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cart = CartProvider.of(context)!.getCart(restaurant.id);
+    final cart = context.watch<CartProvider>().getCart(restaurant.id);
     final itemsCount = cart.totalItems;
     final theme = Theme.of(context);
 

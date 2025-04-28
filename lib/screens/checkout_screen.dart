@@ -5,8 +5,11 @@ import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
+import 'package:plovo/widgets/address_form/address_form.dart';
+import 'package:plovo/widgets/address_form/address_form_controller.dart';
 import 'package:plovo/widgets/checkout_card.dart';
 import 'package:plovo/widgets/checkout_cart_dish_item.dart';
+import 'package:provider/provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -19,18 +22,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   late Restaurant restaurant;
   late Cart cart;
   late CartProvider cartProvider;
+  final addressFormController = AddressFormController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
     restaurant = restaurantsData.firstWhere((res) => res.id == restaurantId);
-    cartProvider = CartProvider.of(context)!;
+    cartProvider = context.watch<CartProvider>();
     cart = cartProvider.getCart(restaurantId);
   }
 
   void goBackToRestaurant() async {
     Navigator.of(context).popUntil((p) => p.settings.name == AppRoutes.dishes);
+  }
+
+  void placeOrder() {
+    if (addressFormController.formKey.currentState!.validate()) {
+      final user = addressFormController.getUser();
+      print(
+        'Name: ${user.firstName} ${user.lastName}, address: ${user.address}',
+      );
+    } else {
+      print('Form is not valid!');
+    }
+  }
+
+  @override
+  void dispose() {
+    addressFormController.dispose();
+    super.dispose();
   }
 
   @override
@@ -69,9 +90,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       title: 'Your address',
                       subtitle: 'Enter your delivery details',
                       children: [
-                        Text('Your name'),
-                        Text('Your street address'),
-                        Text('Your phone number'),
+                        AddressForm(controller: addressFormController),
                       ],
                     ),
                     SizedBox(height: 16),
@@ -89,7 +108,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
             ),
-            ActionButton(onPressed: () {}, child: Text('Place order')),
+            ActionButton(onPressed: placeOrder, child: Text('Place order')),
           ],
         ),
       ),

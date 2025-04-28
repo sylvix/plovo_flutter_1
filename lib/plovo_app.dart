@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:plovo/app_routes.dart';
-import 'package:plovo/providers/cart_state.dart';
+import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/screens/cart_screen.dart';
 import 'package:plovo/screens/checkout_screen.dart';
 import 'package:plovo/screens/dishes_screen.dart';
 import 'package:plovo/screens/not_found_screen.dart';
 import 'package:plovo/screens/restaurants_screen.dart';
 import 'package:plovo/theme/light_theme.dart';
+import 'package:provider/provider.dart';
 
 class PlovoApp extends StatelessWidget {
   const PlovoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return CartState(
+    return ChangeNotifierProvider(
+      create: (ctx) => CartProvider(),
       child: MaterialApp(
         theme: lightTheme,
         initialRoute: AppRoutes.home,

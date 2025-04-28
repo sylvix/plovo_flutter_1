@@ -8,6 +8,7 @@ import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/cart_dish_tile.dart';
 import 'package:plovo/widgets/cart_empty.dart';
+import 'package:provider/provider.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -29,7 +30,7 @@ class _CartScreenState extends State<CartScreen> {
     restaurant = restaurantsData.firstWhere(
       (restaurant) => restaurant.id == restaurantId,
     );
-    cartProvider = CartProvider.of(context)!;
+    cartProvider = context.watch<CartProvider>();
     cart = cartProvider.getCart(restaurantId);
   }
 

@@ -2,33 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/dish.dart';
 
-class CartProvider extends InheritedWidget {
-  final Map<String, Cart> carts;
-  final Cart Function(String restaurantId) getCart;
-  final void Function(Dish dish) addDish;
-  final void Function(Dish dish) removeDish;
+class CartProvider extends ChangeNotifier {
+  Map<String, Cart> _carts = {};
 
-  const CartProvider({
-    super.key,
-    required this.carts,
-    required this.getCart,
-    required this.addDish,
-    required this.removeDish,
-    required super.child,
-  });
+  Map<String, Cart> get carts => _carts;
 
-  static CartProvider? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<CartProvider>();
+  Cart getCart(String restaurantId) {
+    return carts[restaurantId] ?? Cart(cartDishes: []);
   }
 
-  @override
-  bool updateShouldNotify(covariant CartProvider oldWidget) {
-    final cartsLengthChanged = carts.length != oldWidget.carts.length;
-    final anyCartChanged = carts.entries.any((entry) {
-      final oldCart = oldWidget.carts[entry.key];
-      return oldCart == null || entry.value != oldCart;
-    });
+  void addDish(Dish dish) {
+    _carts = {
+      ..._carts,
+      dish.restaurantId: getCart(dish.restaurantId).addDish(dish),
+    };
+    notifyListeners();
+  }
 
-    return cartsLengthChanged || anyCartChanged;
+  void removeDish(Dish dish) {
+    _carts = {
+      ..._carts,
+      dish.restaurantId: getCart(dish.restaurantId).removeDish(dish),
+    };
+    notifyListeners();
   }
 }

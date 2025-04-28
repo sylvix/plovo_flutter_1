@@ -32,6 +32,7 @@ class CheckoutCard extends StatelessWidget {
           collapsedShape: shape,
           childrenPadding: EdgeInsets.symmetric(vertical: 16),
           initiallyExpanded: initiallyExpanded,
+          maintainState: true,
           title: Row(
             children: [
               Expanded(

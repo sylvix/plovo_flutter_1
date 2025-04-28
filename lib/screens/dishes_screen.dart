@@ -8,6 +8,7 @@ import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/dish_card.dart';
+import 'package:provider/provider.dart';
 
 class DishesScreen extends StatefulWidget {
   const DishesScreen({super.key});
@@ -34,7 +35,7 @@ class _DishesScreenState extends State<DishesScreen> {
         restaurantDishes
             .where((dish) => dish.restaurantId == restaurantId)
             .toList();
-    cartProvider = CartProvider.of(context)!;
+    cartProvider = context.watch<CartProvider>();
     cart = cartProvider.getCart(restaurantId);
   }
 
