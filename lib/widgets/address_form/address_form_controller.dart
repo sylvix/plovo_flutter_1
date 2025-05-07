@@ -15,6 +15,12 @@ class AddressFormController {
     );
   }
 
+  void setUser(User user) {
+    firstNameController.text = user.firstName;
+    lastNameController.text = user.lastName;
+    addressController.text = user.address;
+  }
+
   void dispose() {
     firstNameController.dispose();
     lastNameController.dispose();

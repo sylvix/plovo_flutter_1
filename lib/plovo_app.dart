@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:plovo/app_routes.dart';
 import 'package:plovo/providers/cart_provider.dart';
-import 'package:plovo/screens/cart_screen.dart';
-import 'package:plovo/screens/checkout_screen.dart';
-import 'package:plovo/screens/dishes_screen.dart';
-import 'package:plovo/screens/not_found_screen.dart';
-import 'package:plovo/screens/restaurants_screen.dart';
+import 'package:plovo/providers/user_provider.dart';
+import 'package:plovo/screens/home_navigation_screen.dart';
 import 'package:plovo/theme/light_theme.dart';
 import 'package:provider/provider.dart';
 
@@ -14,20 +10,12 @@ class PlovoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (ctx) => CartProvider(),
-      child: MaterialApp(
-        theme: lightTheme,
-        initialRoute: AppRoutes.home,
-        routes: {
-          AppRoutes.home: (ctx) => RestaurantsScreen(),
-          AppRoutes.dishes: (ctx) => DishesScreen(),
-          AppRoutes.cart: (ctx) => CartScreen(),
-          AppRoutes.checkout: (ctx) => CheckoutScreen(),
-        },
-        onUnknownRoute:
-            (s) => MaterialPageRoute(builder: (ctx) => NotFoundScreen()),
-      ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (ctx) => CartProvider()),
+        ChangeNotifierProvider(create: (ctx) => UserProvider()),
+      ],
+      child: MaterialApp(theme: lightTheme, home: HomeNavigationScreen()),
     );
   }
 }

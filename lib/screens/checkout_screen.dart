@@ -4,6 +4,7 @@ import 'package:plovo/data/restaurants_data.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
+import 'package:plovo/providers/user_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/address_form/address_form.dart';
 import 'package:plovo/widgets/address_form/address_form_controller.dart';
@@ -31,6 +32,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     restaurant = restaurantsData.firstWhere((res) => res.id == restaurantId);
     cartProvider = context.watch<CartProvider>();
     cart = cartProvider.getCart(restaurantId);
+    final user = context.watch<UserProvider>().user;
+    if (user != null) {
+      addressFormController.setUser(user);
+    }
   }
 
   void goBackToRestaurant() async {
@@ -90,7 +95,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       title: 'Your address',
                       subtitle: 'Enter your delivery details',
                       children: [
-                        AddressForm(controller: addressFormController),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 8,
+                          ),
+                          child: AddressForm(controller: addressFormController),
+                        ),
                       ],
                     ),
                     SizedBox(height: 16),
