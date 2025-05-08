@@ -13,6 +13,10 @@ class CartDish {
   CartDish copyWith({Dish? dish, int? amount}) {
     return CartDish(dish: dish ?? this.dish, amount: amount ?? this.amount);
   }
+
+  Map<String, dynamic> toJson() {
+    return {'dish': dish.toJson(), 'amount': amount};
+  }
 }
 
 class Cart {

@@ -4,4 +4,8 @@ class Restaurant {
   final String image;
 
   Restaurant({required this.id, required this.name, required this.image});
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'image': image};
+  }
 }

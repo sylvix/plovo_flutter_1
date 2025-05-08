@@ -16,4 +16,8 @@ class User {
       address: address ?? this.address,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {'firstName': firstName, 'lastName': lastName, 'address': address};
+  }
 }

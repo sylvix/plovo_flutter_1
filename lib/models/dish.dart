@@ -12,4 +12,14 @@ class Dish {
     required this.image,
     required this.price,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'restaurantId': restaurantId,
+      'name': name,
+      'image': image,
+      'price': price,
+    };
+  }
 }

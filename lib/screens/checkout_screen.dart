@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:plovo/app_routes.dart';
 import 'package:plovo/data/restaurants_data.dart';
+import 'package:plovo/helpers/request.dart';
 import 'package:plovo/models/cart.dart';
+import 'package:plovo/models/order.dart';
 import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/providers/user_provider.dart';
@@ -24,6 +27,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   late Cart cart;
   late CartProvider cartProvider;
   final addressFormController = AddressFormController();
+  bool isOrderCreating = false;
 
   @override
   void didChangeDependencies() {
@@ -44,12 +48,38 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   void placeOrder() {
     if (addressFormController.formKey.currentState!.validate()) {
-      final user = addressFormController.getUser();
-      print(
-        'Name: ${user.firstName} ${user.lastName}, address: ${user.address}',
-      );
+      sendCreateOrderRequest();
     } else {
       print('Form is not valid!');
+    }
+  }
+
+  void sendCreateOrderRequest() async {
+    try {
+      setState(() => isOrderCreating = true);
+      final user = addressFormController.getUser();
+      final orderRequest = CreateOrderRequest(
+        restaurant: restaurant,
+        cartDishes: cart.cartDishes,
+        user: user,
+        createdAt: DateTime.now(),
+      );
+      final url = '${dotenv.env['BASE_URL']}/orders.json';
+
+      await request(url, method: 'POST', body: orderRequest.toJson());
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Order placed successfully!')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Something went wrong! Try again later!')),
+        );
+      }
+    } finally {
+      setState(() => isOrderCreating = false);
     }
   }
 
@@ -120,7 +150,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
             ),
-            ActionButton(onPressed: placeOrder, child: Text('Place order')),
+            ActionButton(
+              onPressed: placeOrder,
+              isLoading: isOrderCreating,
+              child: Text('Place order'),
+            ),
           ],
         ),
       ),
