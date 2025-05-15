@@ -1,66 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:plovo/providers/user_provider.dart';
-import 'package:plovo/widgets/address_form/address_form.dart';
-import 'package:plovo/widgets/address_form/address_form_controller.dart';
-import 'package:provider/provider.dart';
+import 'package:plovo/app_routes.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  final addressFormController = AddressFormController();
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final user = context.watch<UserProvider>().user;
-    if (user != null) {
-      addressFormController.setUser(user);
-    }
+  void goToPersonalInformation(BuildContext context) {
+    Navigator.of(context).pushNamed(AppRoutes.personalInformation);
   }
 
-  void saveProfile() {
-    if (addressFormController.formKey.currentState!.validate()) {
-      final user = addressFormController.getUser();
-      context.read<UserProvider>().setUser(user);
-    }
-  }
-
-  @override
-  void dispose() {
-    addressFormController.dispose();
-    super.dispose();
+  void goToOrderHistory(BuildContext context) {
+    Navigator.of(context).pushNamed(AppRoutes.orderHistory);
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       appBar: AppBar(title: Text('Profile'), automaticallyImplyLeading: false),
-      body: Container(
-        height: double.infinity,
-        padding: EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(bottom: bottomPadding + 60),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Personal Information', style: theme.textTheme.titleLarge),
-              SizedBox(height: 16),
-              AddressForm(controller: addressFormController),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: saveProfile,
-                child: Text('Save Profile'),
-              ),
-            ],
-          ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.only(bottom: bottomPadding + 60),
+        child: Column(
+          children: [
+            ListTile(
+              title: Text('Personal information'),
+              leading: Icon(Icons.person),
+              onTap: () => goToPersonalInformation(context),
+              trailing: Icon(Icons.chevron_right),
+            ),
+            ListTile(
+              title: Text('Order history'),
+              leading: Icon(Icons.history),
+              onTap: () => goToOrderHistory(context),
+              trailing: Icon(Icons.chevron_right),
+            ),
+          ],
         ),
       ),
     );

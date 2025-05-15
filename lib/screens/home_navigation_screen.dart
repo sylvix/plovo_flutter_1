@@ -4,6 +4,8 @@ import 'package:plovo/screens/cart_screen.dart';
 import 'package:plovo/screens/checkout_screen.dart';
 import 'package:plovo/screens/dishes_screen.dart';
 import 'package:plovo/screens/not_found_screen.dart';
+import 'package:plovo/screens/order_history_screen.dart';
+import 'package:plovo/screens/personal_information_screen.dart';
 import 'package:plovo/screens/profile_screen.dart';
 import 'package:plovo/screens/restaurants_screen.dart';
 
@@ -26,7 +28,11 @@ class _HomeNavigationScreenState extends State<HomeNavigationScreen> {
     AppRoutes.checkout: (ctx) => CheckoutScreen(),
   };
 
-  final Routes profileRoutes = {AppRoutes.profile: (ctx) => ProfileScreen()};
+  final Routes profileRoutes = {
+    AppRoutes.profile: (ctx) => ProfileScreen(),
+    AppRoutes.personalInformation: (ctx) => PersonalInformationScreen(),
+    AppRoutes.orderHistory: (ctx) => OrderHistoryScreen(),
+  };
 
   MaterialPageRoute onGenerateRoute(Routes routes, RouteSettings settings) {
     final builder = routes[settings.name];

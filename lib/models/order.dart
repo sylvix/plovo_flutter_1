@@ -24,3 +24,34 @@ class CreateOrderRequest {
     };
   }
 }
+
+class OrderListItem {
+  final String id;
+  final String restaurantName;
+  final String restaurantImage;
+  final double total;
+  final DateTime createdAt;
+
+  const OrderListItem({
+    required this.id,
+    required this.restaurantName,
+    required this.restaurantImage,
+    required this.total,
+    required this.createdAt,
+  });
+
+  factory OrderListItem.fromJson(Map<String, dynamic> json) {
+    final total = json['cartDishes'].fold(
+      0,
+      (sum, cartDish) => sum + cartDish['dish']['price'] * cartDish['amount'],
+    );
+
+    return OrderListItem(
+      id: json['id'],
+      restaurantName: json['restaurant']['name'],
+      restaurantImage: json['restaurant']['image'],
+      total: total,
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
+    );
+  }
+}
