@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:plovo/helpers/request.dart';
-import 'package:plovo/models/order.dart';
+import 'package:plovo/providers/order_provider.dart';
 import 'package:plovo/widgets/center_loading_indicator.dart';
 import 'package:plovo/widgets/center_placeholder.dart';
 import 'package:plovo/widgets/order_card.dart';
+import 'package:provider/provider.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -14,52 +13,46 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  List<OrderListItem> orders = [];
-  bool isFetching = false;
-
-  void fetchOrders() async {
-    try {
-      setState(() => isFetching = true);
-      final url = '${dotenv.env['BASE_URL']}/orders.json';
-      final Map<String, dynamic>? response = await request(url);
-      final List<OrderListItem> newOrders = [];
-
-      if (response == null) {
-        setState(() => orders = []);
-        return;
-      }
-
-      for (final key in response.keys) {
-        final Map<String, dynamic> orderJson = {...response[key], 'id': key};
-        final order = OrderListItem.fromJson(orderJson);
-        newOrders.add(order);
-      }
-
-      setState(() => orders = newOrders);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Something went wrong!')));
-      }
-    } finally {
-      setState(() => isFetching = false);
-    }
-  }
+  late OrderProvider orderProvider;
 
   @override
   void initState() {
     super.initState();
-    fetchOrders();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<OrderProvider>().fetchOrders();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    orderProvider = context.read<OrderProvider>();
+  }
+
+  @override
+  void dispose() {
+    Future.microtask(() {
+      orderProvider.clearErrors();
+    });
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final orderProvider = context.watch<OrderProvider>();
     Widget body;
 
-    if (isFetching) {
+    if (orderProvider.isFetching) {
       body = CenterLoadingIndicator();
-    } else if (orders.isEmpty) {
+    } else if (orderProvider.isFetchError) {
+      body = CenterPlaceholder(
+        title: 'Something went wrong',
+        iconData: Icons.error_outline,
+        buttonText: 'Try again',
+        onButtonPressed: () => orderProvider.fetchOrders(),
+      );
+    } else if (orderProvider.orders.isEmpty) {
       body = CenterPlaceholder(
         title: 'No orders yet',
         iconData: Icons.remove_shopping_cart_outlined,
@@ -69,9 +62,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     } else {
       body = ListView.separated(
         padding: EdgeInsets.symmetric(vertical: 8),
-        itemCount: orders.length,
+        itemCount: orderProvider.orders.length,
         separatorBuilder: (ctx, i) => Divider(),
-        itemBuilder: (ctx, i) => OrderCard(order: orders[i], onTap: () {}),
+        itemBuilder:
+            (ctx, i) => OrderCard(order: orderProvider.orders[i], onTap: () {}),
       );
     }
 

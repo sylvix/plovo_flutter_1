@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:plovo/app_routes.dart';
 import 'package:plovo/data/restaurants_data.dart';
-import 'package:plovo/helpers/request.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/order.dart';
 import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
+import 'package:plovo/providers/order_provider.dart';
 import 'package:plovo/providers/user_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/address_form/address_form.dart';
@@ -26,8 +25,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   late Restaurant restaurant;
   late Cart cart;
   late CartProvider cartProvider;
+  late OrderProvider orderProvider;
   final addressFormController = AddressFormController();
-  bool isOrderCreating = false;
 
   @override
   void didChangeDependencies() {
@@ -35,6 +34,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
     restaurant = restaurantsData.firstWhere((res) => res.id == restaurantId);
     cartProvider = context.watch<CartProvider>();
+    orderProvider = context.watch<OrderProvider>();
     cart = cartProvider.getCart(restaurantId);
     final user = context.watch<UserProvider>().user;
     if (user != null) {
@@ -56,7 +56,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   void sendCreateOrderRequest() async {
     try {
-      setState(() => isOrderCreating = true);
       final user = addressFormController.getUser();
       final orderRequest = CreateOrderRequest(
         restaurant: restaurant,
@@ -64,9 +63,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         user: user,
         createdAt: DateTime.now(),
       );
-      final url = '${dotenv.env['BASE_URL']}/orders.json';
+      await orderProvider.createOrder(orderRequest);
 
-      await request(url, method: 'POST', body: orderRequest.toJson());
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -78,8 +76,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           SnackBar(content: Text('Something went wrong! Try again later!')),
         );
       }
-    } finally {
-      setState(() => isOrderCreating = false);
     }
   }
 
@@ -152,7 +148,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             ActionButton(
               onPressed: placeOrder,
-              isLoading: isOrderCreating,
+              isLoading: orderProvider.isCreating,
               child: Text('Place order'),
             ),
           ],

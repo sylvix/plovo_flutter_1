@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plovo/providers/cart_provider.dart';
+import 'package:plovo/providers/order_provider.dart';
 import 'package:plovo/providers/user_provider.dart';
 import 'package:plovo/screens/home_navigation_screen.dart';
 import 'package:plovo/theme/light_theme.dart';
@@ -14,6 +15,7 @@ class PlovoApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (ctx) => CartProvider()),
         ChangeNotifierProvider(create: (ctx) => UserProvider()),
+        ChangeNotifierProvider(create: (ctx) => OrderProvider()),
       ],
       child: MaterialApp(theme: lightTheme, home: HomeNavigationScreen()),
     );
