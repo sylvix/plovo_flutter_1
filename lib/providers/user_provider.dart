@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/models/user.dart';
 
 class UserProvider extends ChangeNotifier {
@@ -11,3 +12,7 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+final userProvider = ChangeNotifierProvider<UserProvider>((ref) {
+  return UserProvider();
+});

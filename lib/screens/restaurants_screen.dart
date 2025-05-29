@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/app_routes.dart';
-import 'package:plovo/data/restaurants_data.dart';
+import 'package:plovo/providers/restaurant_provider.dart';
 import 'package:plovo/widgets/restaurant_card.dart';
 
-class RestaurantsScreen extends StatelessWidget {
+class RestaurantsScreen extends ConsumerWidget {
   const RestaurantsScreen({super.key});
 
   void onRestaurantSelected(BuildContext context, String restaurantId) {
@@ -11,7 +12,9 @@ class RestaurantsScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final restaurantsData = ref.watch(restaurantsProvider);
+
     return Scaffold(
       appBar: AppBar(title: Text('Restaurants')),
       body: Padding(

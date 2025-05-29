@@ -1,29 +1,40 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/dish.dart';
 
-class CartProvider extends ChangeNotifier {
-  Map<String, Cart> _carts = {};
+class CartNotifier extends Notifier<Map<String, Cart>> {
+  @override
+  Map<String, Cart> build() {
+    return {};
+  }
 
-  Map<String, Cart> get carts => _carts;
-
-  Cart getCart(String restaurantId) {
-    return carts[restaurantId] ?? Cart(cartDishes: []);
+  Cart _getCart(String restaurantId) {
+    return state[restaurantId] ?? Cart(cartDishes: []);
   }
 
   void addDish(Dish dish) {
-    _carts = {
-      ..._carts,
-      dish.restaurantId: getCart(dish.restaurantId).addDish(dish),
+    state = {
+      ...state,
+      dish.restaurantId: _getCart(dish.restaurantId).addDish(dish),
     };
-    notifyListeners();
   }
 
   void removeDish(Dish dish) {
-    _carts = {
-      ..._carts,
-      dish.restaurantId: getCart(dish.restaurantId).removeDish(dish),
+    state = {
+      ...state,
+      dish.restaurantId: _getCart(dish.restaurantId).removeDish(dish),
     };
-    notifyListeners();
   }
 }
+
+final cartProvider = NotifierProvider<CartNotifier, Map<String, Cart>>(() {
+  return CartNotifier();
+});
+
+final cartByRestaurantIdProvider = Provider.family<Cart, String>((
+  ref,
+  restaurantId,
+) {
+  final carts = ref.watch(cartProvider);
+  return carts[restaurantId] ?? Cart(cartDishes: []);
+});

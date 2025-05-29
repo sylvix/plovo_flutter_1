@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/app_routes.dart';
-import 'package:plovo/data/restaurants_data.dart';
-import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/order.dart';
-import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/providers/order_provider.dart';
+import 'package:plovo/providers/restaurant_provider.dart';
 import 'package:plovo/providers/user_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/address_form/address_form.dart';
@@ -14,28 +13,22 @@ import 'package:plovo/widgets/checkout_card.dart';
 import 'package:plovo/widgets/checkout_cart_dish_item.dart';
 import 'package:provider/provider.dart';
 
-class CheckoutScreen extends StatefulWidget {
+class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
 
   @override
-  State<CheckoutScreen> createState() => _CheckoutScreenState();
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
-  late Restaurant restaurant;
-  late Cart cart;
-  late CartProvider cartProvider;
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   late OrderProvider orderProvider;
   final addressFormController = AddressFormController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
-    restaurant = restaurantsData.firstWhere((res) => res.id == restaurantId);
-    cartProvider = context.watch<CartProvider>();
+
     orderProvider = context.watch<OrderProvider>();
-    cart = cartProvider.getCart(restaurantId);
     final user = context.watch<UserProvider>().user;
     if (user != null) {
       addressFormController.setUser(user);
@@ -55,6 +48,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void sendCreateOrderRequest() async {
+    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
+    final restaurant = ref.read(restaurantByIdProvider(restaurantId));
+    final cart = ref.read(cartByRestaurantIdProvider(restaurantId));
+
     try {
       final user = addressFormController.getUser();
       final orderRequest = CreateOrderRequest(
@@ -87,6 +84,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
+    final restaurant = ref.watch(restaurantByIdProvider(restaurantId));
+    final cart = ref.watch(cartByRestaurantIdProvider(restaurantId));
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(

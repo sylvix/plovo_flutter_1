@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/widgets/restaurant_cart_badge.dart';
-import 'package:provider/provider.dart';
 
-class RestaurantCard extends StatelessWidget {
+class RestaurantCard extends ConsumerWidget {
   final Restaurant restaurant;
   final void Function() onTap;
 
@@ -15,8 +15,8 @@ class RestaurantCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final cart = context.watch<CartProvider>().getCart(restaurant.id);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartByRestaurantIdProvider(restaurant.id));
     final itemsCount = cart.totalItems;
     final theme = Theme.of(context);
 

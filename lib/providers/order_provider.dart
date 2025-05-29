@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/helpers/request.dart';
 import 'package:plovo/models/order.dart';
 
@@ -64,3 +65,7 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+final orderProvider = ChangeNotifierProvider<OrderProvider>((ref) {
+  return OrderProvider();
+});

@@ -1,57 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/app_routes.dart';
-import 'package:plovo/data/dishes_data.dart';
-import 'package:plovo/data/restaurants_data.dart';
-import 'package:plovo/models/cart.dart';
-import 'package:plovo/models/dish.dart';
-import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
+import 'package:plovo/providers/dishes_provider.dart';
+import 'package:plovo/providers/restaurant_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/dish_card.dart';
-import 'package:provider/provider.dart';
 
-class DishesScreen extends StatefulWidget {
+class DishesScreen extends ConsumerWidget {
   const DishesScreen({super.key});
 
-  @override
-  State<DishesScreen> createState() => _DishesScreenState();
-}
-
-class _DishesScreenState extends State<DishesScreen> {
-  late Restaurant restaurant;
-  List<Dish> dishes = [];
-  late Cart cart;
-  late CartProvider cartProvider;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
-
-    restaurant = restaurantsData.firstWhere(
-      (restaurant) => restaurant.id == restaurantId,
-    );
-    dishes =
-        restaurantDishes
-            .where((dish) => dish.restaurantId == restaurantId)
-            .toList();
-    cartProvider = context.watch<CartProvider>();
-    cart = cartProvider.getCart(restaurantId);
-  }
-
-  void onDishAdded(Dish dish) {
-    cartProvider.addDish(dish);
-  }
-
-  void onCartButtonPressed() async {
+  void onCartButtonPressed(BuildContext context, String restaurantId) async {
     await Navigator.of(
       context,
-    ).pushNamed(AppRoutes.cart, arguments: restaurant.id);
+    ).pushNamed(AppRoutes.cart, arguments: restaurantId);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
+    final restaurant = ref.watch(restaurantByIdProvider(restaurantId));
+    final dishes = ref.watch(dishesByRestaurantIdProvider(restaurantId));
+    final cart = ref.watch(cartByRestaurantIdProvider(restaurantId));
     final total = cart.total;
 
     return Scaffold(
@@ -72,12 +43,14 @@ class _DishesScreenState extends State<DishesScreen> {
               itemBuilder:
                   (ctx, i) => DishCard(
                     dish: dishes[i],
-                    onAdded: () => onDishAdded(dishes[i]),
+                    onAdded:
+                        () =>
+                            ref.read(cartProvider.notifier).addDish(dishes[i]),
                   ),
             ),
             if (total > 0)
               ActionButton(
-                onPressed: onCartButtonPressed,
+                onPressed: () => onCartButtonPressed(context, restaurantId),
                 child: Text('View cart - ${total.toStringAsFixed(2)} KGS'),
               ),
           ], //

@@ -1,45 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/app_routes.dart';
-import 'package:plovo/data/restaurants_data.dart';
 import 'package:plovo/models/cart.dart';
 import 'package:plovo/models/dish.dart';
-import 'package:plovo/models/restaurant.dart';
 import 'package:plovo/providers/cart_provider.dart';
+import 'package:plovo/providers/restaurant_provider.dart';
 import 'package:plovo/widgets/action_button.dart';
 import 'package:plovo/widgets/cart_dish_tile.dart';
 import 'package:plovo/widgets/cart_empty.dart';
-import 'package:provider/provider.dart';
 
-class CartScreen extends StatefulWidget {
+class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
+  ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen> {
-  late Restaurant restaurant;
-  late Cart cart;
-  late CartProvider cartProvider;
+class _CartScreenState extends ConsumerState<CartScreen> {
+  late CartNotifier cartNotifier;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
-
-    restaurant = restaurantsData.firstWhere(
-      (restaurant) => restaurant.id == restaurantId,
-    );
-    cartProvider = context.watch<CartProvider>();
-    cart = cartProvider.getCart(restaurantId);
+    cartNotifier = ref.read(cartProvider.notifier);
   }
 
   void addDish(Dish dish) {
-    cartProvider.addDish(dish);
+    cartNotifier.addDish(dish);
   }
 
   void removeDish(Dish dish) {
-    cartProvider.removeDish(dish);
+    cartNotifier.removeDish(dish);
   }
 
   void checkAndConfirmRemoval(CartDish cartDish) async {
@@ -77,13 +68,16 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void goToCheckout() {
+  void goToCheckout(String restaurantId) {
     final navigator = Navigator.of(context);
-    navigator.pushNamed(AppRoutes.checkout, arguments: restaurant.id);
+    navigator.pushNamed(AppRoutes.checkout, arguments: restaurantId);
   }
 
   @override
   Widget build(BuildContext context) {
+    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
+    final restaurant = ref.watch(restaurantByIdProvider(restaurantId));
+    final cart = ref.watch(cartByRestaurantIdProvider(restaurantId));
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final total = cart.total;
 
@@ -113,7 +107,7 @@ class _CartScreenState extends State<CartScreen> {
                       },
                     ),
                     ActionButton(
-                      onPressed: goToCheckout,
+                      onPressed: () => goToCheckout(restaurantId),
                       child: Text(
                         'Go to checkout - ${total.toStringAsFixed(2)} KGS',
                       ),
