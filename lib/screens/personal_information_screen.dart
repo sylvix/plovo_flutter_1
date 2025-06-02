@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/providers/user_provider.dart';
 import 'package:plovo/widgets/address_form/address_form.dart';
 import 'package:plovo/widgets/address_form/address_form_controller.dart';
-import 'package:provider/provider.dart';
 
-class PersonalInformationScreen extends StatefulWidget {
+class PersonalInformationScreen extends ConsumerStatefulWidget {
   const PersonalInformationScreen({super.key});
 
   @override
-  State<PersonalInformationScreen> createState() =>
+  ConsumerState<PersonalInformationScreen> createState() =>
       _PersonalInformationScreenState();
 }
 
-class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
+class _PersonalInformationScreenState
+    extends ConsumerState<PersonalInformationScreen> {
   final addressFormController = AddressFormController();
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final user = context.watch<UserProvider>().user;
+  void initState() {
+    super.initState();
+    final user = ref.read(userProvider);
     if (user != null) {
       addressFormController.setUser(user);
     }
@@ -27,7 +28,11 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   void saveProfile() {
     if (addressFormController.formKey.currentState!.validate()) {
       final user = addressFormController.getUser();
-      context.read<UserProvider>().setUser(user);
+      ref.read(userProvider.notifier).state = user;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Personal information updated!')));
+      Navigator.of(context).pop();
     }
   }
 

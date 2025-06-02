@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/app_routes.dart';
-import 'package:plovo/models/order.dart';
 import 'package:plovo/providers/cart_provider.dart';
 import 'package:plovo/providers/order_provider.dart';
 import 'package:plovo/providers/restaurant_provider.dart';
@@ -11,7 +10,6 @@ import 'package:plovo/widgets/address_form/address_form.dart';
 import 'package:plovo/widgets/address_form/address_form_controller.dart';
 import 'package:plovo/widgets/checkout_card.dart';
 import 'package:plovo/widgets/checkout_cart_dish_item.dart';
-import 'package:provider/provider.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -21,15 +19,13 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 }
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
-  late OrderProvider orderProvider;
   final addressFormController = AddressFormController();
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    orderProvider = context.watch<OrderProvider>();
-    final user = context.watch<UserProvider>().user;
+    final user = ref.read(userProvider);
     if (user != null) {
       addressFormController.setUser(user);
     }
@@ -41,39 +37,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   void placeOrder() {
     if (addressFormController.formKey.currentState!.validate()) {
-      sendCreateOrderRequest();
-    } else {
-      print('Form is not valid!');
+      final user = addressFormController.getUser();
+      ref.read(userProvider.notifier).state = user;
+      final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
+      ref.read(createOrderProvider.notifier).createOrder(restaurantId);
     }
   }
 
-  void sendCreateOrderRequest() async {
-    final restaurantId = ModalRoute.of(context)!.settings.arguments as String;
-    final restaurant = ref.read(restaurantByIdProvider(restaurantId));
-    final cart = ref.read(cartByRestaurantIdProvider(restaurantId));
-
-    try {
-      final user = addressFormController.getUser();
-      final orderRequest = CreateOrderRequest(
-        restaurant: restaurant,
-        cartDishes: cart.cartDishes,
-        user: user,
-        createdAt: DateTime.now(),
+  void listenForCreateNotifier() {
+    ref.listen(createOrderProvider, (prev, next) {
+      next.whenOrNull(
+        data: (d) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Order created successfully!')),
+          );
+        },
+        error: (e, stack) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Something went wrong!')));
+        },
       );
-      await orderProvider.createOrder(orderRequest);
-
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Order placed successfully!')));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Something went wrong! Try again later!')),
-        );
-      }
-    }
+    });
   }
 
   @override
@@ -88,6 +73,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final restaurant = ref.watch(restaurantByIdProvider(restaurantId));
     final cart = ref.watch(cartByRestaurantIdProvider(restaurantId));
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final createOrderState = ref.watch(createOrderProvider);
+
+    listenForCreateNotifier();
 
     return Scaffold(
       appBar: AppBar(title: Text('Checkout - ${restaurant.name}')),
@@ -148,7 +136,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
             ActionButton(
               onPressed: placeOrder,
-              isLoading: orderProvider.isCreating,
+              isLoading: createOrderState.isLoading,
               child: Text('Place order'),
             ),
           ],

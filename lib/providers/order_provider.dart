@@ -1,71 +1,60 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plovo/helpers/request.dart';
 import 'package:plovo/models/order.dart';
+import 'package:plovo/providers/cart_provider.dart';
+import 'package:plovo/providers/restaurant_provider.dart';
+import 'package:plovo/providers/user_provider.dart';
 
-class OrderProvider extends ChangeNotifier {
-  List<OrderListItem> _orders = [];
-  bool _isFetching = false;
-  bool _isFetchError = false;
-  bool _isCreating = false;
+final ordersListProvider = FutureProvider.autoDispose<List<OrderListItem>>((
+  ref,
+) async {
+  final url = '${dotenv.env['BASE_URL']}/orders.json';
+  final Map<String, dynamic>? response = await request(url);
 
-  List<OrderListItem> get orders => _orders;
-  bool get isFetching => _isFetching;
-  bool get isFetchError => _isFetchError;
-  bool get isCreating => _isCreating;
-
-  Future<void> fetchOrders() async {
-    try {
-      _isFetching = true;
-      _isFetchError = false;
-      notifyListeners();
-
-      final url = '${dotenv.env['BASE_URL']}/orders.json';
-      final Map<String, dynamic>? response = await request(url);
-      final List<OrderListItem> newOrders = [];
-
-      if (response == null) {
-        _orders = [];
-        return;
-      }
-
-      for (final key in response.keys) {
-        final Map<String, dynamic> orderJson = {...response[key], 'id': key};
-
-        final order = OrderListItem.fromJson(orderJson);
-        newOrders.add(order);
-      }
-
-      _orders = newOrders;
-    } catch (e) {
-      _isFetchError = true;
-    } finally {
-      _isFetching = false;
-      notifyListeners();
-    }
+  if (response == null) {
+    return [];
   }
 
-  Future<void> createOrder(CreateOrderRequest orderRequest) async {
-    try {
-      _isCreating = true;
-      notifyListeners();
+  final List<OrderListItem> newOrders = [];
+
+  for (final key in response.keys) {
+    final Map<String, dynamic> orderJson = {...response[key], 'id': key};
+    final order = OrderListItem.fromJson(orderJson);
+    newOrders.add(order);
+  }
+
+  return newOrders;
+});
+
+class CreateOrderNotifier extends AsyncNotifier<void> {
+  @override
+  build() {}
+
+  Future<void> createOrder(String restaurantId) async {
+    final restaurant = ref.read(restaurantByIdProvider(restaurantId));
+    final cart = ref.read(cartByRestaurantIdProvider(restaurantId));
+    final user = ref.read(userProvider);
+
+    state = AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      if (user == null) {
+        throw Exception('User not found');
+      }
+
+      final orderRequest = CreateOrderRequest(
+        restaurant: restaurant,
+        cartDishes: cart.cartDishes,
+        user: user,
+        createdAt: DateTime.now(),
+      );
 
       final url = '${dotenv.env['BASE_URL']}/orders.jsonE';
-
       await request(url, method: 'POST', body: orderRequest.toJson());
-    } finally {
-      _isCreating = false;
-      notifyListeners();
-    }
-  }
-
-  void clearErrors() {
-    _isFetchError = false;
-    notifyListeners();
+    });
   }
 }
 
-final orderProvider = ChangeNotifierProvider<OrderProvider>((ref) {
-  return OrderProvider();
-});
+final createOrderProvider = AsyncNotifierProvider<CreateOrderNotifier, void>(
+  CreateOrderNotifier.new,
+);
